@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        .checked {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .search-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .history {
+            margin-top: 20px;
+        }
+        .history h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Compras</h1>
+        <form id="addItemForm">
+            <input type="text" id="itemInput" placeholder="Adicionar item à lista..." required>
+            <input type="submit" value="Adicionar" class="btn btn-primary">
+        </form>
+        <input type="text" id="searchInput" placeholder="Buscar item na lista...">
+        <button onclick="searchItems()" class="btn search-btn">Buscar</button>
+        <ul id="shoppingList">
+            <!-- Lista de itens de compras será adicionada aqui -->
+        </ul>
+        <div class="history">
+            <h2>Histórico de Compras</h2>
+            <ul id="historyList">
+                <!-- Histórico de compras será adicionado aqui -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const shoppingList = document.getElementById('shoppingList');
+        const historyList = document.getElementById('historyList');
+
+        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var newItem = document.getElementById('itemInput').value;
+            if (newItem.trim() !== '') {
+                addItemToList(newItem);
+                document.getElementById('itemInput').value = '';
+            }
+        });
+
+        function addItemToList(item) {
+            var li = document.createElement('li');
+            li.innerHTML = `
+                <span onclick="toggleChecked(this)">${item}</span>
+                <button onclick="editItem(this)" class="btn btn-primary">Editar</button>
+                <button onclick="removeItem(this)" class="btn btn-danger">Remover</button>
+            `;
+            shoppingList.appendChild(li);
+        }
+
+        function removeItem(button) {
+            var item = button.parentElement;
+            item.parentElement.removeChild(item);
+        }
+
+        function editItem(button) {
+            var span = button.previousElementSibling;
+            var newItem = prompt("Editar item:", span.textContent);
+            if (newItem !== null && newItem.trim() !== '') {
+                span.textContent = newItem;
+            }
+        }
+
+        function toggleChecked(span) {
+            span.classList.toggle('checked');
+            var listItem = span.parentElement;
+            var list = listItem.parentElement;
+            if (span.classList.contains('checked')) {
+                list.appendChild(listItem); // Move o item marcado para o final da lista
+            }
+        }
+
+        function searchItems() {
+            var searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            var items = shoppingList.getElementsByTagName('span');
+            for (var i = 0; i < items.length; i++) {
+                var itemText = items[i].textContent.toLowerCase();
+                if (itemText.includes(searchTerm)) {
+                    items[i].style.color = 'red'; // Destacar o item encontrado
+                } else {
+                    items[i].style.color = ''; // Resetar a cor original
+                }
+            }
+        }
+
+        // Simulação de histórico de compras
+        // Isso pode ser substituído por uma funcionalidade de armazenamento real
+        // como localStorage ou banco de dados
+        addItemToList('Maçãs');
+        addItemToList('Bananas');
+        addItemToList('Leite');
+        addItemToList('Pão');
+        addItemToList('Ovos');
+        addItemToList('Cereal');
+
+        // Adicionar itens marcados como comprados ao histórico
+        window.addEventListener('unload', function() {
+            var checkedItems = shoppingList.getElementsByClassName('checked');
+            for (var i = 0; i < checkedItems.length; i++) {
+                var itemText = checkedItems[i].textContent;
+                addItemToHistory(itemText);
+                removeItem(checkedItems[i].nextSibling); // Remove o botão "Remover"
+                shoppingList.removeChild(checkedItems[i].parentElement);
+            }
+        });
+
+        function addItemToHistory(item) {
+            var li = document.createElement('li');
+            li.textContent = item;
+            historyList.appendChild(li);
+        }
+    </script>
+</body>
+</html>
